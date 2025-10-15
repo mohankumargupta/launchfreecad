@@ -1,14 +1,22 @@
 #include "generated.h"
 
+struct StringArray {
+    const char** strings;
+    size_t len;
+};
+
+extern "C" {
+    StringArray freecad_folders();
+    void free_string_array(StringArray array);
+}
+
 int main()
 {
-    // Create an instance of the AppWindow component
     auto main_window = AppWindow::create();
 
-    // Set the property defined in the .slint file
-    //main_window->set_greeting("Hello from Zig + C++ + Slint!");
+    StringArray folders_from_zig = freecad_folders();
 
-    // Run the event loop
+    //Run
     main_window->run();
 
     return 0;

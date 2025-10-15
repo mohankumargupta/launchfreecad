@@ -5,7 +5,7 @@ pub const StringArray = extern struct {
     len: usize,
 };
 
-fn freecad_folders() StringArray {
+export fn freecad_folders() StringArray {
     const allocator = std.heap.c_allocator;
     const items = [_][]const u8{ "one", "two" };
     const string_pointers = allocator.alloc([*c]const u8, items.len) catch @panic("Failed to allocate pointer array");
@@ -21,7 +21,7 @@ fn freecad_folders() StringArray {
     };
 }
 
-export fn free_string_array(array: StringArray) void {
+export fn free_folders(array: StringArray) void {
     const allocator = std.heap.c_allocator;
     const ptr_slice = array.strings[0..array.len];
 
