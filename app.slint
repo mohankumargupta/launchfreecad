@@ -1,8 +1,33 @@
+import { Button, ComboBox } from "std-widgets.slint";
+
 export component AppWindow inherits Window {
-    in property <string> greeting;
-    Text {
-        text: greeting;
-        color: green;
-    }
+    width: 360px;
+    height: 140px;
+    title: "Launch Freecad";
+
+    in property <[string]> freecads;
+    callback launch-freecad(string);
+
+VerticalLayout {
+        spacing: 10px;
+        padding: 12px;
+
+        choices := ComboBox {
+            model: freecads;
+        }
+
+        Button {
+            text: "Launch";
+            clicked => {
+                root.launch-freecad(choices.current-value);
+            }
+        }
+
+        
+        Text {
+            text: "Selected: ";
+        
+        }
+    } 
 }
 
