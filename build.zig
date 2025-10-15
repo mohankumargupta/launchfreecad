@@ -23,14 +23,18 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    //"-I", slint_install_path ++ "/include/slint/",
     exe.addCSourceFile(.{
         .file = b.path("src/main.cpp"),
-        .flags = &.{},
+        .flags = &.{
+            "-std=c++20",
+        },
     });
 
-    const include_path = std.Build.LazyPath{ .cwd_relative = slint_install_path ++ "/include" };
+    const include_path = std.Build.LazyPath{ .cwd_relative = slint_install_path ++ "/include/slint/" };
     exe.root_module.addIncludePath(include_path);
-    //exe.addLibraryPath(b.path(slint_install_path ++ "/lib"));
+    exe.addLibraryPath(.{ .cwd_relative = slint_install_path ++ "/lib" });
+    exe.linkSystemLibrary("slint_cpp");
 
     exe.step.dependOn(&slint_compiler_cmd.step);
     exe.linkLibCpp();
