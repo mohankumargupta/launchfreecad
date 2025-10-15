@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 
 pub const StringArray = extern struct {
     strings: [*c][*c]const u8,
@@ -7,6 +8,36 @@ pub const StringArray = extern struct {
 
 export fn freecad_folders() StringArray {
     const allocator = std.heap.c_allocator;
+
+    var home_dir: []u8 = undefined;
+    defer allocator.free(home_dir);
+    if (builtin.os.tag == .windows) {
+        home_dir = std.process.getEnvVarOwned(allocator, "USERPROFILE") catch &[_]u8{};
+    } else {
+        home_dir = std.process.getEnvVarOwned(allocator, "HOME") catch &[_]u8{};
+    }
+
+    const downloads_dir = std.fs.path.join(allocator, &[_][]const u8{
+        home_dir,
+        "Downloads",
+    }) catch &[_]u8{};
+
+    var dir = std.fs.cwd().openDir(downloads_dir, .{}) catch {
+        return StringArray{ .strings = null, .len = 0 };
+    };
+    defer dir.close();
+
+    var it = dir.iterate();
+    while (it.next() catch |err| {
+        // An error occurred during iteration. Log it and stop.
+        std.debug.print("Error iterating directory: {any}\n", .{err});
+        //break outer; // Exit the while loop.
+    }) |entry| {
+        if (entry.kind == .directory) {
+            std.debug.print("Directory: {s}\n", .{entry.name});
+        }
+    }
+
     const items = [_][]const u8{ "one", "two" };
     const string_pointers = allocator.alloc([*c]const u8, items.len) catch @panic("Failed to allocate pointer array");
 

@@ -48,7 +48,6 @@ pub fn build(b: *std.Build) void {
         }),
     });
     zig_lib.linkLibC();
-
     exe.linkLibrary(zig_lib);
     b.installArtifact(exe);
 
