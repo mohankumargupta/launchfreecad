@@ -40,13 +40,10 @@ pub fn build(b: *std.Build) void {
     exe.linkLibCpp();
     b.installArtifact(exe);
 
-    // Copy slint_cpp.dll to output directory
     const dll_source = slint_install_path ++ "/lib/slint_cpp.dll";
-    //const dll_dest = b.getInstallPath(.bin, "slint_cpp.dll");
     const copy_dll_step = b.addInstallFile(.{
         .cwd_relative = dll_source,
     }, "bin/slint_cpp.dll");
-    //b.installBinFile(dll_source, dll_dest);
 
     b.getInstallStep().dependOn(&copy_dll_step.step);
 
