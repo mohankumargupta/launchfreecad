@@ -1,4 +1,4 @@
-//#include "generated.h"
+#include "generated.h"
 
 int main()
 {

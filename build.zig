@@ -29,7 +29,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const include_path = std.Build.LazyPath{ .cwd_relative = slint_install_path ++ "/include" };
-    exe.addIncludePath(include_path);
+    exe.root_module.addIncludePath(include_path);
     //exe.addLibraryPath(b.path(slint_install_path ++ "/lib"));
 
     exe.step.dependOn(&slint_compiler_cmd.step);
