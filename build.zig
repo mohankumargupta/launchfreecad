@@ -38,6 +38,18 @@ pub fn build(b: *std.Build) void {
 
     exe.step.dependOn(&slint_compiler_cmd.step);
     exe.linkLibCpp();
+
+    const zig_lib = b.addLibrary(.{
+        .name = "zig_lib",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/lib.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    zig_lib.linkLibC();
+
+    exe.linkLibrary(zig_lib);
     b.installArtifact(exe);
 
     const dll_source = slint_install_path ++ "/lib/slint_cpp.dll";
