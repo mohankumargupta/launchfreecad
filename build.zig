@@ -28,6 +28,10 @@ pub fn build(b: *std.Build) void {
         .flags = &.{},
     });
 
+    const include_path = std.Build.LazyPath{ .cwd_relative = slint_install_path ++ "/include" };
+    exe.addIncludePath(include_path);
+    //exe.addLibraryPath(b.path(slint_install_path ++ "/lib"));
+
     exe.step.dependOn(&slint_compiler_cmd.step);
     exe.linkLibCpp();
     b.installArtifact(exe);
