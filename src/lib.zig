@@ -22,7 +22,7 @@ export fn freecad_folders() StringArray {
         "Downloads",
     }) catch &[_]u8{};
 
-    var dir = std.fs.cwd().openDir(downloads_dir, .{}) catch {
+    var dir = std.fs.cwd().openDir(downloads_dir, .{ .iterate = true }) catch {
         return StringArray{ .strings = null, .len = 0 };
     };
     defer dir.close();
@@ -31,6 +31,8 @@ export fn freecad_folders() StringArray {
     while (it.next() catch |err| {
         // An error occurred during iteration. Log it and stop.
         std.debug.print("Error iterating directory: {any}\n", .{err});
+
+        return StringArray{ .strings = null, .len = 0 };
         //break outer; // Exit the while loop.
     }) |entry| {
         if (entry.kind == .directory) {
