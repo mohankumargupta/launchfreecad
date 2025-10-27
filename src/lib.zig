@@ -58,7 +58,8 @@ export fn freecad_folders() StringArray {
         }
     }
 
-    const items = [_][]const u8{ "one", "two" };
+    const items = found_folders.items;
+    //const items = [_][]const u8{ "one", "two" };
     const string_pointers = allocator.alloc([*c]const u8, items.len) catch @panic("Failed to allocate pointer array");
 
     for (items, 0..) |item, i| {
