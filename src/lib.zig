@@ -43,7 +43,7 @@ export fn freecad_folders() StringArray {
         return StringArray{ .strings = null, .len = 0 };
         //break outer; // Exit the while loop.
     }) |entry| {
-        if (entry.kind == .directory) {
+        if (entry.kind == .directory and std.mem.startsWith(u8, entry.name, "FreeCAD")) {
             //std.debug.print("Directory: {s}\n", .{entry.name});
             const name_copy = allocator.dupe(u8, entry.name) catch {
                 // If allocation fails, we stop and clean up.
