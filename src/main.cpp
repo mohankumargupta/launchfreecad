@@ -9,12 +9,15 @@ struct StringArray {
 extern "C" {
     StringArray freecad_folders();
     void free_folders(StringArray array);
+    void run_freecad(const char* path);
 }
 
 int main()
 {
     auto main_window = AppWindow::create();
-
+    main_window->on_launch_freecad([](slint::SharedString freecad){
+        run_freecad(freecad.data());
+    });
     StringArray folders_from_zig = freecad_folders();
     std::vector<slint::SharedString> folder_vec;
     for (size_t i = 0; i < folders_from_zig.len; ++i) {

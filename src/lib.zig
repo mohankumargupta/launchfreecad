@@ -6,52 +6,51 @@ pub const StringArray = extern struct {
     len: usize,
 };
 
+fn downloads_directory(allocator: std.mem.Allocator) ![]u8 {
+    const home_env_var = if (builtin.os.tag == .windows) "USERPROFILE" else "HOME";
+
+    const home_dir = try std.process.getEnvVarOwned(allocator, home_env_var);
+    defer allocator.free(home_dir);
+
+    const downloads_path = try std.fs.path.join(allocator, &.{
+        home_dir,
+        "Downloads",
+    });
+
+    return downloads_path;
+}
+
 export fn freecad_folders() StringArray {
     const allocator = std.heap.c_allocator;
 
-    var home_dir: []u8 = undefined;
-    defer allocator.free(home_dir);
-    if (builtin.os.tag == .windows) {
-        home_dir = std.process.getEnvVarOwned(allocator, "USERPROFILE") catch &[_]u8{};
-    } else {
-        home_dir = std.process.getEnvVarOwned(allocator, "HOME") catch &[_]u8{};
-    }
-
-    const downloads_dir = std.fs.path.join(allocator, &[_][]const u8{
-        home_dir,
-        "Downloads",
-    }) catch &[_]u8{};
+    const downloads_dir = downloads_directory(allocator) catch |err| {
+        std.debug.print("Error getting downloads path: {any}\n", .{err});
+        return StringArray{ .strings = null, .len = 0 };
+    };
+    defer allocator.free(downloads_dir);
 
     var dir = std.fs.cwd().openDir(downloads_dir, .{ .iterate = true }) catch {
         return StringArray{ .strings = null, .len = 0 };
     };
     defer dir.close();
 
-    //var found_folders = std.ArrayList([]const u8).init(allocator);
     var found_folders: std.ArrayList([]const u8) = .empty;
-    // Defer deinit to clean up the ArrayList's internal memory.
     defer found_folders.deinit(allocator);
 
     var it = dir.iterate();
     while (it.next() catch |err| {
-        // An error occurred during iteration. Log it and stop.
         std.debug.print("Error iterating directory: {any}\n", .{err});
-        // Free any folder names we've already allocated before returning.
         for (found_folders.items) |folder| {
             allocator.free(folder);
         }
         return StringArray{ .strings = null, .len = 0 };
-        //break outer; // Exit the while loop.
     }) |entry| {
         if (entry.kind == .directory and std.mem.startsWith(u8, entry.name, "FreeCAD")) {
-            //std.debug.print("Directory: {s}\n", .{entry.name});
             const name_copy = allocator.dupe(u8, entry.name) catch {
-                // If allocation fails, we stop and clean up.
                 std.debug.print("Failed to allocate memory for folder name\n", .{});
                 break;
             };
             found_folders.append(allocator, name_copy) catch {
-                // If appending fails, free the copy we just made and stop.
                 allocator.free(name_copy);
                 break;
             };
@@ -82,4 +81,8 @@ export fn free_folders(array: StringArray) void {
     }
 
     allocator.free(ptr_slice);
+}
+
+export fn run_freecad(freecad: [*c]const u8) void {
+    std.debug.print("location {s}\n", .{freecad});
 }
