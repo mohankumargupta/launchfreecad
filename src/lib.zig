@@ -84,5 +84,36 @@ export fn free_folders(array: StringArray) void {
 }
 
 export fn run_freecad(freecad: [*c]const u8) void {
-    std.debug.print("location {s}\n", .{freecad});
+    const allocator = std.heap.c_allocator;
+    const base_path_slice = std.mem.span(freecad);
+    const exe_name = "freecad.exe";
+    const downloads_dir = downloads_directory(allocator) catch {
+        return;
+    };
+    defer allocator.free(downloads_dir);
+    const exe_path = std.fs.path.join(allocator, &.{
+        downloads_dir,
+        base_path_slice,
+        "bin",
+        exe_name,
+    }) catch {
+        return;
+    };
+    launch(exe_path);
+}
+
+fn launch(freecad: []const u8) void {
+    const allocator = std.heap.c_allocator;
+    std.debug.print("{s}\n", .{freecad});
+    const args = &[_][]const u8{freecad};
+    var child = std.process.Child.init(args, allocator);
+    const term = child.spawnAndWait() catch |err| {
+        std.debug.print("!!! FAILED TO LAUNCH PROCESS: {any}\n", .{err});
+        return;
+    };
+
+    switch (term) {
+        .Exited => |code| std.debug.print("FreeCAD process exited with code: {}\n", .{code}),
+        else => std.debug.print("FreeCAD process exited with a non-standard status.\n", .{}),
+    }
 }
